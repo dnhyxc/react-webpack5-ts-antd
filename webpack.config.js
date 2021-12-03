@@ -5,13 +5,12 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const CleanCSSPlugin = require("less-plugin-clean-css");
 // 控制台编译输出信息设置plugin
 const friendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 // 每次编译时清除dist文件的内容
 // const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 // 编译进度条
 // const ProgressBarPlugin = require("progress-bar-webpack-plugin");
-// 打包时不不将注释提取到单独的文件中
-// const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = (env, argv) => {
   const isDev = argv.mode === "development";
@@ -152,14 +151,16 @@ module.exports = (env, argv) => {
       extensions: [".js", ".jsx", ".json", ".ts", ".tsx"],
     },
     optimization: {
-      minimize: isDev ? true : false,
+      // minimize设置是否进行代码压缩
+      minimize: !isDev ? true : false,
       minimizer: [
         // 将 CSS 提取到单独的文件中，为每个包含 CSS 的 JS 文件创建一个 CSS 文件，并且支持 CSS 和 SourceMaps 的按需加载。
         new CssMinimizerPlugin(),
-        //不将注释提取到单独的文件中
-        // new TerserPlugin({
-        //   extractComments: false,
-        // }),
+        new TerserPlugin({
+          exclude: /node_modules/,
+          parallel: true,
+          extractComments: true, // true 不将注释提取到单独的文件中
+        }),
       ],
       /**
        * 配置长缓存，长效缓存是浏览器层面的缓存，
